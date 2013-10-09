@@ -12,12 +12,13 @@
   }
   #level {
     position: relative;
-    width: 500px;
-    height: 60px;
+    width: 80%;
+    height: 70px;
+    margin: 0 auto;
   }
   #glass {
     background-color: lightgreen;
-    border-radius: 10px;
+    border-radius: 20px;
     position: absolute;
     top: 0;
     right: 0;
@@ -34,17 +35,17 @@
     width: 4px;
   }
   #right_bar {
-    left: 295px;
+    right: 43%;
   }
   #left_bar {
-    right: 295px;
+    left: 43%;
   }
   #bubble {
     position: absolute;
-    width: 70px;
-    height: 50px;
-    top: 5px;
-    left: 215px;
+    width: 10%;
+    height: 80%;
+    top: 10%;
+    left: 45%;
     background-color: #fff;
     border-radius: 25px;
     z-index: 10;
@@ -53,7 +54,7 @@
     position: absolute;
     left: 0;
     bottom: -25px;
-    width: 500px;
+    width: 100%;
     text-align: center;
     font-size: larger;
   }
@@ -72,24 +73,26 @@
 
   <script>
   (function() {
-    var bubble = document.getElementById("bubble"),
-      bubble_width = parseInt(window.getComputedStyle(bubble, null).getPropertyValue("width"), 10),
-      level = document.getElementById("level"),
-      level_width = parseInt(window.getComputedStyle(level, null).getPropertyValue("width"), 10),
-      output = document.getElementById("output"),
-      do_orientation = function(event) {
-        var y = event.gamma.toFixed(1),
-            bubble_left = ((Math.tan(y / 45) * level_width / 2) +
-                          (level_width / 2) -
-                          (bubble_width / 2)).toFixed(0);
-        bubble.style.left = bubble_left + "px";
-        output.innerHTML = y;
-      };
+    function do_orientation(event) {
+      var y = event.gamma.toFixed(1);
+      var bubble_left = ((Math.tan(y / 45) * level_width / 2) +
+                        (level_width / 2) -
+                        (bubble_width / 2)).toFixed(0);
+      bubble.style.left = bubble_left + "px";
+      output.innerHTML = y;
+    }
+
+    var output = document.getElementById("output");
+    var bubble = document.getElementById("bubble");
+    var bubble_width = parseInt(window.getComputedStyle(bubble, null).getPropertyValue("width"), 10);
+    var level = document.getElementById("level");
+    var level_width = parseInt(window.getComputedStyle(level, null).getPropertyValue("width"), 10);
+    level.style.height = (level_width * .07) + "px";
     
     if (typeof window.DeviceOrientationEvent === "function") {
       window.addEventListener("deviceorientation", do_orientation, true);
     } else {
-      output.innerHTML = "Ack!  Yer computer doesnae dae device orientation.";
+      output.innerHTML = "Ack! Yer computer doesnae dae device orientation.";
     }
   }());
   </script>
