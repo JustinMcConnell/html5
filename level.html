@@ -78,6 +78,13 @@
       var bubble_left = ((Math.tan(-y / 45) * level_width / 2) +
                         (level_width / 2) -
                         (bubble_width / 2)).toFixed(0);
+      
+      if (bubble_left < 0) {
+        bubble_left = 0;
+      } else if (bubble_left > level_width - bubble_width) {
+        bubble_left = level_width - bubble_width;
+      }
+
       bubble.style.left = bubble_left + "px";
       output.innerHTML = Math.abs(y);
     }
