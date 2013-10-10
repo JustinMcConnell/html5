@@ -73,12 +73,24 @@
 
   <script>
   (function() {
+    function get_orientation() {
+      if (typeof window.orientation != "undefined") {
+        return window.orientation == 0 ? "portrait" : "landscape";
+      } else if (typeof screen.mozOrientation != "undefined") {
+        return screen.mozOrientation == "portrait-primary" ? "portrait" : "landscape";
+      }
+      return "portrait";
+    }
+
     function do_orientation(event) {
-      var y = event.gamma.toFixed(1);
+      var orientation = get_orientation();
+      var y = orientation == "portrait" ? 
+              event.gamma.toFixed(1) : 
+              event.beta.toFixed(1);
       var bubble_left = ((Math.tan(-y / 45) * level_width / 2) +
                         (level_width / 2) -
                         (bubble_width / 2)).toFixed(0);
-      
+
       if (bubble_left < 0) {
         bubble_left = 0;
       } else if (bubble_left > level_width - bubble_width) {
