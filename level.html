@@ -75,11 +75,11 @@
   (function() {
     function do_orientation(event) {
       var y = event.gamma.toFixed(1);
-      var bubble_left = ((Math.tan(y / 45) * level_width / 2) +
+      var bubble_left = ((Math.tan(-y / 45) * level_width / 2) +
                         (level_width / 2) -
                         (bubble_width / 2)).toFixed(0);
       bubble.style.left = bubble_left + "px";
-      output.innerHTML = y;
+      output.innerHTML = Math.abs(y);
     }
 
     var output = document.getElementById("output");
