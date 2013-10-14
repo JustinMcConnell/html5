@@ -1,0 +1,121 @@
+<!doctype html>
+<html>
+<head>
+  <title>Free Fall</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+  <meta name="author" content="Justin McConnell">
+  <meta name="url" content="https://github.com/JustinMcConnell">
+
+  <style>
+  body {
+    font-family: sans-serif;
+  }
+  #instructions,
+  #distance_fallen {
+    position: fixed;
+    left: 0;
+    right: 0;
+    text-transform: uppercase;
+    text-align: center;
+  }
+  #instructions,
+  #output {
+    font-size: 3em;
+    font-weight: bold;    
+  }
+  #instructions {
+    top: 40%;
+  }
+  #distance_fallen {
+    bottom: 0;
+  }
+  #output {
+    text-transform: none;
+  }
+  </style>
+</head>
+
+<body>
+
+  <div id="instructions">Drop Me!</div>
+  <div id="distance_fallen">
+    <div id="output">0 m</div>
+    Your device fell
+  </div>
+
+  <script>
+  (function() {
+    
+    // is the phone falling?
+    var falling = false;
+
+    // start time of the last fall
+    var fall_start_time = 0;
+
+    // end time of the last fall
+    var fall_end_time = 0;
+
+    // a gravity event must take place this amount of time after the last event to be deemed a fall
+    var FALL_SEPARATION = 1000;
+
+    // a gravity event must record over this amount of gravity before being deemed a fall
+    var FALLING_THRESHOLD_G = 9.0;
+
+    // earth's gravity 
+    var EARTH_GRAVITY = 9.78;
+
+    // write fall distance here
+    var output = document.getElementById("output");
+    var instructions = document.getElementById("instructions");
+    var body = document.body;
+
+    // we think the device is falling
+    function fall_start() {
+      falling = true;
+      fall_start_time = now();
+    }
+
+    // we think the device has stopped falling
+    function fall_end() {
+      falling = false;
+      fall_end_time = now();
+      output.innerHTML = distance_fallen(fall_start_time, fall_end_time) + " m";
+      instructions.innerHTML = "Again!";
+    }
+
+    // given two timestmaps, how far has the device fallen under the influence of gravity
+    function distance_fallen(time_start, time_end) {
+      return Number(0.5 * EARTH_GRAVITY * Math.pow(((time_end - time_start) / 1000), 2)).toFixed(3);
+    }
+
+    // what time is it?
+    function now() {
+      return typeof performance == "object" ?
+             performance.now() :
+             Date.now();
+    }
+
+    // device has moved
+    function motion(event) {
+      var z = event.acceleration.z;
+
+      // should we start a fall?
+      if (now() - fall_end_time > FALL_SEPARATION &&
+          z < -FALLING_THRESHOLD_G &&
+          !falling) {
+        fall_start();
+
+      // should we end a fall?
+      } else if(z > FALLING_THRESHOLD_G && falling) {
+        fall_end();
+      }
+    }
+
+    window.addEventListener("devicemotion", motion, true);
+
+  }());
+  </script>
+
+</body>
+</html>
