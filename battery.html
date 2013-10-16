@@ -1,0 +1,118 @@
+<!doctype html>
+<html>
+<head>
+  <title>Battery Status</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+  <meta name="author" content="Justin McConnell">
+  <meta name="url" content="https://github.com/JustinMcConnell">
+
+  <style>
+  body {
+    font-family: sans-serif;
+  }
+  #battery {
+    display: block;
+    margin: 0 auto;
+    transform: rotate(-90deg);
+    -moz-transform: rotate(-90deg);
+    -webkit-transform: rotate(-90deg);
+  }
+  #battery_percentage {
+    font-size: 2em;
+    text-transform: uppercase;
+    text-align: center;
+    margin-top: -20px;
+  }
+  </style>
+</head>
+
+<body>
+
+  <div id="output"></div>
+
+  <svg id="battery" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="256px" height="256px" viewBox="0 0 512 512" enable-background="new 0 0 512 512" xml:space="preserve">
+    <path id="battery_shell" d="M402,156 H50 v200 h352 V156 z" fill="black" />
+    <path id="battery_buffer" d="M372,186 v140 H80 V186 H372 z" fill="white"/>
+    <path id="battery_level" d="M362,196 v120 H90 V196 H362 z" fill="green" />
+    <path id="battery_cap" d="M422,301h24c8.837,0,16-7.163,16-16v-58c0-8.837-7.163-16-16-16h-24V301z"/>
+    <path id="battery_bolt" d="M140.073,232.426l104.424,71.1v-41.35l71.705,20.538l-103.27-74.239v45.034L140.073,232.426z"/>
+  </svg>
+    
+  <div id="battery_percentage">100%</div>
+  
+
+  <script>
+  (function() {
+    var output = document.getElementById("output");
+    var viewport_width = document.documentElement.clientWidth;
+    var viewport_height = document.documentElement.clientHeight;
+    var battery = window.navigator.battery;
+    var battery_svg = document.getElementById("battery");
+    var battery_svg_width = parseInt(battery_svg.getAttribute("width"));
+    var battery_svg_height = parseInt(battery_svg.getAttribute("height"));
+    var battery_level = document.getElementById("battery_level");
+    var battery_level_width = 272;
+    var battery_level_left = 90;
+    var battery_level_path = battery_level.getAttribute("d");
+    var battery_bolt = document.getElementById("battery_bolt");
+    var battery_percentage = document.getElementById("battery_percentage");
+    battery_percentage.setAttribute("y", (battery_svg_height * 1.65));
+    battery_percentage.setAttribute("x", (battery_svg_width) - 55);
+    //battery_svg.style.left = ((viewport_width / 2) - (battery_svg_width / 2)) + "px";
+    //battery_svg.style.top = ((viewport_height / 2) - (battery_svg_height / 2)) + "px";
+
+    function battery_status(event) {
+      // show/hide the lightning bolt
+      battery_bolt.style.display = battery.charging ? "inline" : "none";
+
+      // new battery percentage
+      battery_percentage.innerHTML = Math.round((battery.level * 100)) + "%";
+
+      // new battery level width
+      var new_width = Math.floor(battery_level_width * battery.level);
+
+      // new battery level right x coordinate
+      var battery_level_right = battery_level_left + new_width;
+
+      // new battery level path
+      var path_new = battery_level_path
+                       .replace(/M\d{3}/, "M" + battery_level_right)
+                       .replace(/H362 z/, "H" + battery_level_right + " z");
+      battery_level.setAttribute("d", path_new);
+
+      // new battery level color
+      var new_color = "green";
+      if (battery.level < 0.15) {
+        new_color = "red";
+      } else if (battery.level < 0.25) {
+        new_color = "yellow";
+      }
+      battery_level.setAttribute("fill", new_color);
+
+      // debug
+if (0) {      
+      output.innerHTML = new Date() + "<br>" + 
+                         "viewport: " + viewport_width + "," + viewport_height + "<br>" +
+                         "svg: " + battery_svg_width + "," + battery_svg_height + "<br>" +
+                         "left: " + ((viewport_width / 2) - (battery_svg_width / 2)) + "<br>" +
+                         "top: " + ((viewport_height / 2) - (battery_svg_height / 2)) + "<br>" + 
+                         "level: " + battery.level + "<br>" +
+                         "charging: " + battery.charging + "<br>" +
+                         "charging time: " + battery.chargingTime + "<br>" +
+                         "discharging time: " + battery.dischargingTime + "<br>";
+}
+    }
+
+    battery.addEventListener("levelchange", battery_status);
+    battery.addEventListener("changingchange", battery_status);
+    battery.addEventListener("charginttimechange", battery_status);
+    battery.addEventListener("dischargingtimechange", battery_status);
+    window.addEventListener("load", battery_status);
+    window.setInterval(battery_status, 1000);
+
+  }());
+  </script>
+
+</body>
+</html>
