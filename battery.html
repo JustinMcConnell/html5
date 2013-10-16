@@ -29,8 +29,6 @@
 
 <body>
 
-  <div id="output"></div>
-
   <svg id="battery" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="256px" height="256px" viewBox="0 0 512 512" enable-background="new 0 0 512 512" xml:space="preserve">
     <path id="battery_shell" d="M402,156 H50 v200 h352 V156 z" fill="black" />
     <path id="battery_buffer" d="M372,186 v140 H80 V186 H372 z" fill="white"/>
@@ -40,7 +38,6 @@
   </svg>
     
   <div id="battery_percentage">100%</div>
-  
 
   <script>
   (function() {
@@ -57,10 +54,6 @@
     var battery_level_path = battery_level.getAttribute("d");
     var battery_bolt = document.getElementById("battery_bolt");
     var battery_percentage = document.getElementById("battery_percentage");
-    battery_percentage.setAttribute("y", (battery_svg_height * 1.65));
-    battery_percentage.setAttribute("x", (battery_svg_width) - 55);
-    //battery_svg.style.left = ((viewport_width / 2) - (battery_svg_width / 2)) + "px";
-    //battery_svg.style.top = ((viewport_height / 2) - (battery_svg_height / 2)) + "px";
 
     function battery_status(event) {
       // show/hide the lightning bolt
@@ -89,19 +82,6 @@
         new_color = "yellow";
       }
       battery_level.setAttribute("fill", new_color);
-
-      // debug
-if (0) {      
-      output.innerHTML = new Date() + "<br>" + 
-                         "viewport: " + viewport_width + "," + viewport_height + "<br>" +
-                         "svg: " + battery_svg_width + "," + battery_svg_height + "<br>" +
-                         "left: " + ((viewport_width / 2) - (battery_svg_width / 2)) + "<br>" +
-                         "top: " + ((viewport_height / 2) - (battery_svg_height / 2)) + "<br>" + 
-                         "level: " + battery.level + "<br>" +
-                         "charging: " + battery.charging + "<br>" +
-                         "charging time: " + battery.chargingTime + "<br>" +
-                         "discharging time: " + battery.dischargingTime + "<br>";
-}
     }
 
     battery.addEventListener("levelchange", battery_status);
