@@ -1,0 +1,213 @@
+<!doctype html>
+<html>
+<head>
+  <title>Find Me</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+  <meta name="author" content="Justin McConnell">
+  <meta name="url" content="https://github.com/JustinMcConnell">
+
+  <style>
+  html,
+  body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+  }
+  body {
+    font-family: sans-serif;
+  }
+  #map {
+    width: 100%;
+    height: 100%;
+  }
+  #output {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 100px;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: #fff;
+    padding: 10px;
+    line-height: 1.5;
+    z-index: 1000;
+  }
+  </style>
+</head>
+
+<body>
+  
+  <div id="output"></div>
+  <div id="map"></div>
+
+  <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?libraries=geometry&sensor=true"></script>
+
+  <script>
+  // Animated Marker Movement. Robert Gerlach 2012-2013 https://github.com/combatwombat/marker-animate
+  // MIT license
+ (function(){var e=function(e,t){defaultOptions={duration:1e3,easing:"linear",complete:null};t=t||{};for(key in defaultOptions){t[key]=t[key]||defaultOptions[key]}var n;if(typeof this.getPosition==="function"){n="getPosition"}else if(typeof this.getCenter==="function"){n="getCenter"}var r;if(typeof this.setPosition==="function"){r="setPosition"}else if(typeof this.getCenter==="function"){r="setCenter"}if(t.easing!="linear"){if(typeof jQuery=="undefined"||!jQuery.easing[t.easing]){throw'"'+t.easing+"\" easing function doesn't exist. Include jQuery and/or the jQuery easing plugin and use the right function name.";return}}window.requestAnimationFrame=window.requestAnimationFrame||window.mozRequestAnimationFrame||window.webkitRequestAnimationFrame||window.msRequestAnimationFrame;window.cancelAnimationFrame=window.cancelAnimationFrame||window.mozCancelAnimationFrame;this.AT_startPosition_lat=this[n]().lat();this.AT_startPosition_lng=this[n]().lng();var i=e.lat();var s=e.lng();if(Math.abs(s-this.AT_startPosition_lng)>180){if(s>this.AT_startPosition_lng){s-=360}else{s+=360}}var o=function(n,u){var a=(new Date).getTime()-u;var f=a/t.duration;var l=f;if(t.easing!=="linear"){l=jQuery.easing[t.easing](f,a,0,1,t.duration)}if(f<1){var c=new google.maps.LatLng(n.AT_startPosition_lat+(i-n.AT_startPosition_lat)*l,n.AT_startPosition_lng+(s-n.AT_startPosition_lng)*l);n[r](c);if(window.requestAnimationFrame){n.AT_animationHandler=window.requestAnimationFrame(function(){o(n,u)})}else{n.AT_animationHandler=setTimeout(function(){o(n,u)},17)}}else{n[r](e);if(typeof t.complete==="function"){t.complete()}}};if(window.cancelAnimationFrame){window.cancelAnimationFrame(this.AT_animationHandler)}else{clearTimeout(this.AT_animationHandler)}o(this,(new Date).getTime())};google.maps.Marker.prototype.animateTo=e;google.maps.Circle.prototype.animateTo=e})()
+  </script>
+
+  <script>
+
+  (function() {
+        // google map
+    var map,
+
+        // last position
+        lat_lng,
+
+        // marker on last position
+        marker,
+
+        // reverse geocode the postion with this
+        geocoder,
+
+        // accuracy of position in meters
+        accuracy,
+
+        // display the reverse geocoded address here
+        info_window,
+
+        // draw a circle around the position where the radius is the accuracy of the position
+        circle,
+
+        // write debug output here
+        output = document.querySelector("#output");
+
+    /*
+     * GPS sent a position update, do something on the map.
+     */
+    function position_update(position) {
+      // map is not loaded
+      if (!map) {
+        return;
+      }
+
+      accuracy = position.coords.accuracy;
+      lat_lng = new google.maps.LatLng(position.coords.latitude, 
+                                       position.coords.longitude);
+
+      // update existing overlays
+      if (marker) {
+        marker.animateTo(lat_lng);
+        circle.animateTo(lat_lng);
+
+      // first time around, add overlays
+      } else {
+        marker = new google.maps.Marker({
+          position: lat_lng,
+          title: "You are here!",
+          icon: {
+            url: "location_position.png",
+            size: new google.maps.Size(22, 22),
+            origin: new google.maps.Point(0, 0),
+            anchor: new google.maps.Point(11, 11) 
+          },
+          map: map
+        });
+
+        info_window = new google.maps.InfoWindow({
+          content: "You are here!"
+        });
+
+        geocoder.geocode({"latLng": lat_lng}, function(results, status) {
+          if (status == google.maps.GeocoderStatus.OK && results[0]) {
+            info_window.setContent("You are here:<br>" + 
+                                   results[0].formatted_address + "<br>" +
+                                   "Accurate to within " + accuracy + " meters.");
+            info_window.open(map, marker);
+          }
+        });
+
+        circle = new google.maps.Circle({
+          strokeColor: "#99C2E8",
+          strokeOpacity: 1.0,
+          strokeWeight: 2,
+          fillColor: "#aaaacc",
+          fillOpacity: 0.3,
+          center: lat_lng,
+          radius: accuracy,
+          map: map
+        });
+
+        map.panTo(lat_lng);
+        map.zoomTo(accuracy);        
+      }
+
+      output.innerHTML += new Date() + " " + 
+                          position.coords.latitude.toFixed(2) + "x" + 
+                          position.coords.longitude.toFixed(2) + ", " +
+                          accuracy + " m<br>";
+    }
+
+    function position_error(error) {
+      output.innerHTML += "Error: " + error.message + " (" + error.code + ")<br>";
+    }
+
+    function load_map() {
+      var mapOptions = {
+        center: new google.maps.LatLng(37.77056, -122.42694),
+        zoom: 12,
+        mapTypeId: google.maps.MapTypeId.ROADMAP
+      };
+      map = new google.maps.Map(document.getElementById("map"), mapOptions);
+      geocoder = new google.maps.Geocoder();
+    }
+
+    /*
+     * Zoom the map step by step until it reaches about a certain size in meters.
+     * zoomTo will stop when the map's width or height, which ever is smaller, reaches the given size.
+     * Leave a little room to spare around the given size, this is the buffer.
+     * Each zoom should only start after the previous zoom finishes animating. 
+     */
+    google.maps.Map.prototype.zoomTo = function(meters, buffer) {
+      // stop zooming when the map has reached meters * buffer
+      buffer = buffer || 8;
+
+      // max zoom level for the current map type (road, hybride, satellite)
+      var maxZoom = map.mapTypes[map.getMapTypeId()].maxZoom;
+
+      var zoom = function zoom() {
+        var size = map.getSizeInMeters();
+        var smaller_dimension = size.width < size.height ? "width" : "height";
+        
+        if (size[smaller_dimension] > (meters * buffer) && map.getZoom() < maxZoom) {
+          map.setZoom(map.getZoom() + 1);
+        } else {
+          google.maps.event.removeListener(listener_handle);
+        }
+      };
+
+      // zoom further when the previous zoom finishes
+      var listener_handle = google.maps.event.addListener(map, "idle", zoom);
+
+      zoom();
+    };
+
+    /*
+     * Get the width and height of the map.  Google measures this in meters.
+     */
+    google.maps.Map.prototype.getSizeInMeters = function() {
+      var bounds = this.getBounds();
+      var northEast = bounds.getNorthEast();
+      var southWest = bounds.getSouthWest();
+      var northWest = new google.maps.LatLng(northEast.lat(), southWest.lng());
+      var width = google.maps.geometry.spherical.computeDistanceBetween(northWest, northEast);
+      var height = google.maps.geometry.spherical.computeDistanceBetween(northWest, southWest);
+      return {"width": width, "height": height};
+    };
+
+    window.addEventListener("load", load_map);
+    if (typeof window.navigator.geolocation == "object") {
+      window.navigator.geolocation.watchPosition(position_update, position_error, {enableHighAccuracy: true});
+    } else {
+      output.innerHTML = "Your device does not support geolocaiton.<br>If it did, you would see your location marked on the map.";
+      output.style.display = "block";
+    }
+
+  }());
+  </script>
+
+</body>
+</html>
